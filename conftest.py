@@ -15,8 +15,8 @@ def page(request):
             headless=False,
             slow_mo=1000,
             args=[
-                "--start-maximized",
-                "--window-position=0,-1080"
+                "--start-maximized"
+                # "--window-position=0,-1080"
             ]
         )
 
@@ -58,3 +58,16 @@ def pytest_runtest_makereport(item, call):
                 name="Screenshot",
                 attachment_type=allure.attachment_type.PNG
             )
+
+@pytest.fixture(scope="session")
+def base_url():
+    return "https://automationexercise.com"
+
+@pytest.fixture(autouse=True)
+def block_google_ads(page):
+    page.route(
+        "**/*",
+        lambda route: route.abort()
+        if any(ad in route.request.url for ad in ["doubleclick.net", "googlesyndication.com", "googleadservices.com"])
+        else route.continue_()
+    )
